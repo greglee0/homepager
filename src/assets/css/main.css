@@ -394,7 +394,12 @@ html[data-theme='dark'] .hero {
 .hero-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0.55));
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.42) 40%, rgba(0, 0, 0, 0.6));
+}
+
+/* 壁纸较亮或较花时保证文字清晰 */
+.has-wallpaper .hero-inner {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .hero-inner {
