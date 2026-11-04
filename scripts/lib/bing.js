@@ -8,13 +8,16 @@ const DEFAULT_MARKETS = ['zh-CN', 'en-US', 'ja-JP', 'en-GB', 'de-DE', 'fr-FR', '
 
 /**
  * 从 urlbase 中取出图片的唯一名称，用来给不同地区的同一张图去重
- * 例如 "/th?id=OHR.FallLeaves_ZH-CN1234567" → "OHR.FallLeaves"
+ *
+ * 不同地区的后缀不一样，有 "_ZH-CN123"、"_EN-US123"，也有不带地区的 "_ROW123"，
+ * 所以统一取第一个下划线之前的部分，例如：
+ * "/th?id=OHR.FallLeaves_ZH-CN1234567" 和 "/th?id=OHR.FallLeaves_ROW7654321" → "OHR.FallLeaves"
  * @param {string} urlbase Bing 返回的 urlbase
- * @returns {string} 图片名称
+ * @returns {string} 图片名称（小写）
  */
-function imageKey(urlbase) {
+export function imageKey(urlbase) {
   const id = (urlbase.match(/id=([^&]+)/) || [])[1] || urlbase;
-  return id.replace(/_[A-Z]{2}-[A-Z]{2}\d*$/i, '');
+  return id.split('_')[0].toLowerCase();
 }
 
 /**
@@ -54,14 +57,16 @@ export async function loadBing(config, root, opts = {}) {
   const tasks = markets.flatMap((mkt) => [fetchArchive(mkt, 0, 8), fetchArchive(mkt, 7, 8)]);
   const settled = await Promise.allSettled(tasks);
   const seen = new Map();
+  const hashes = new Set();
   settled.forEach((s, i) => {
     if (s.status !== 'fulfilled') return;
     const mkt = markets[Math.floor(i / 2)];
     for (const img of s.value) {
       if (!img?.urlbase) continue;
       const key = imageKey(img.urlbase);
-      // 同一张图只保留第一个地区（配置靠前的地区优先，中文标题优先）
-      if (seen.has(key)) continue;
+      // 同一张图只保留第一个地区（配置靠前的地区优先，中文标题优先）；名称或图片哈希相同都算重复
+      if (seen.has(key) || (img.hsh && hashes.has(img.hsh))) continue;
+      if (img.hsh) hashes.add(img.hsh);
       seen.set(key, {
         id: key,
         desktop: `${BING}${img.urlbase}_1920x1080.jpg`,
