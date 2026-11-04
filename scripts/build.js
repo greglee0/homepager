@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadGithubData } from './lib/github.js';
+import { loadPosts } from './lib/feed.js';
 import { copyDir, minifyCss, minifyHtml, pick, readJSON, writeFile } from './lib/utils.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -77,7 +78,10 @@ export async function build(opts = {}) {
     `${pathToFileURL(path.join(SRC, 'templates', 'page.js')).href}?t=${started}`
   );
 
-  const github = await loadGithubData(config, ROOT, { offline: opts.offline });
+  const [github, posts] = await Promise.all([
+    loadGithubData(config, ROOT, { offline: opts.offline }),
+    loadPosts(config, ROOT, { offline: opts.offline }),
+  ]);
 
   await fs.rm(OUT, { recursive: true, force: true });
   await copyDir(path.join(SRC, 'public'), OUT);
@@ -100,7 +104,7 @@ export async function build(opts = {}) {
   for (const lang of langs) {
     const dict = await readJSON(path.join(SRC, 'i18n', `${lang}.json`));
     if (!dict) throw new Error(`缺少语言文件 src/i18n/${lang}.json`);
-    const ctx = createContext({ config, lang, dict, github, base, assets });
+    const ctx = createContext({ config, lang, dict, github, posts, base, assets });
     const dir = lang === config.site.defaultLang ? OUT : path.join(OUT, lang);
     await writeFile(path.join(dir, 'index.html'), finalize(renderIndex(ctx, buildTime)));
     if (lang === config.site.defaultLang) {

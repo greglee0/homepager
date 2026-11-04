@@ -623,6 +623,26 @@
   }
 
   /* ---------------------------------------------------------------------
+     彩蛋：控制台问候；输入 Konami 秘籍 ↑↑↓↓←→←→BA 切换彩虹模式
+     --------------------------------------------------------------------- */
+  if (F.easterEgg) {
+    if (window.console && console.log) {
+      console.log('%c Hi! %c ' + I.eggConsole, 'background:#6366f1;color:#fff;border-radius:4px;padding:2px 6px', 'color:#6366f1');
+    }
+    var KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    var konamiPos = 0;
+    document.addEventListener('keydown', function (e) {
+      var key = e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      konamiPos = key === KONAMI[konamiPos] ? konamiPos + 1 : key === KONAMI[0] ? 1 : 0;
+      if (konamiPos === KONAMI.length) {
+        konamiPos = 0;
+        var on = document.documentElement.classList.toggle('rainbow');
+        if (on) toast(I.eggRainbow);
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------------
      加载完成：移除加载动画
      --------------------------------------------------------------------- */
   /** 隐藏加载动画（最多等待 2.5 秒，避免外部图片拖慢首屏） */

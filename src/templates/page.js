@@ -26,11 +26,12 @@ const LANG_COLORS = {
  * @param {string} opts.lang 当前语言
  * @param {object} opts.dict 当前语言字典
  * @param {object} opts.github GitHub 数据
+ * @param {object} [opts.posts] 博客文章数据
  * @param {string} opts.base 站点部署的子路径，例如 /homepager/
  * @param {object} opts.assets 带指纹的静态资源文件名
  * @returns {object} 渲染上下文
  */
-export function createContext({ config, lang, dict, github, base, assets }) {
+export function createContext({ config, lang, dict, github, posts, base, assets }) {
   const otherLang = lang === 'zh' ? 'en' : 'zh';
   /** 生成某个语言首页的相对地址 */
   const langHref = (l) => (l === config.site.defaultLang ? base : `${base}${l}/`);
@@ -39,6 +40,7 @@ export function createContext({ config, lang, dict, github, base, assets }) {
     lang,
     dict,
     github,
+    posts,
     base,
     assets,
     otherLang,
@@ -76,7 +78,7 @@ function sectionHead(id, title, extra = '') {
  */
 function renderHeader(ctx) {
   const { t, p, config } = ctx;
-  const links = ['about', 'projects', 'skills', 'timeline', 'contact']
+  const links = navKeys(ctx)
     .map((k) => `<a href="#${k}" data-nav="${k}">${esc(t(`nav.${k}`))}</a>`)
     .join('');
   return `<header class="topbar" id="topbar">
@@ -187,27 +189,211 @@ function renderAbout(ctx) {
   const paras = (p(config.profile.about) || []).map((s) => `<p>${esc(s)}</p>`).join('');
   const facts = config.profile.facts.map((f) => `<li>${icon(f.icon)}<span>${esc(p(f.text))}</span></li>`).join('');
   const stars = github.repos.filter((r) => !r.fork).reduce((sum, r) => sum + (r.stargazers_count || 0), 0);
-  const u = github.user;
-  const stats = typeof u?.public_repos === 'number'
-    ? [
-        ['repos', u.public_repos],
-        ['stars', stars],
-        ['followers', u.followers],
-        ['following', u.following],
-      ]
-        .map(([k, v]) => `<div class="stat"><b data-count="${v}">${compact(v)}</b><span>${esc(t(`stats.${k}`))}</span></div>`)
-        .join('')
-    : '';
+  const downloads = Object.values(github.releases || {}).reduce((sum, r) => sum + (r.totalDownloads || 0), 0);
+  const u = github.user || {};
+  // 只展示拿到了数据的统计项
+  const stats = [
+    ['repos', u.public_repos],
+    ['followers', u.followers],
+    ['stars', typeof u.public_repos === 'number' ? stars : null],
+    ['downloads', downloads || null],
+  ]
+    .filter(([, v]) => typeof v === 'number')
+    .map(([k, v]) => `<div class="stat"><b data-count="${v}">${compact(v)}</b><span>${esc(t(`stats.${k}`))}</span></div>`)
+    .join('');
+  const side = `${stats ? `<div class="card stats reveal">${stats}</div>` : ''}${renderNow(ctx)}`;
   return `<section class="section" id="about" aria-labelledby="about-title">
   <div class="container">
     ${sectionHead('about', t('sections.about'))}
-    <div class="about-grid${stats ? '' : ' single'}">
+    <div class="about-grid${side ? '' : ' single'}">
       <div class="card about-text reveal">${paras}<ul class="facts">${facts}</ul></div>
-      ${stats ? `<div class="card stats reveal">${stats}</div>` : ''}
+      ${side ? `<div class="about-side">${side}</div>` : ''}
     </div>
     ${renderSites(ctx)}
   </div>
 </section>`;
+}
+
+/**
+ * 渲染“此刻在忙”列表
+ * @param {object} ctx 渲染上下文
+ * @returns {string} HTML，没有配置时为空
+ */
+function renderNow(ctx) {
+  const { t, p, config } = ctx;
+  if (!config.now?.length) return '';
+  const items = config.now.map((n) => `<li>${icon(n.icon)}<span>${esc(p(n.text))}</span></li>`).join('');
+  return `<div class="card now reveal"><h3><span class="pulse" aria-hidden="true"></span>${esc(t('sections.now'))}</h3><ul>${items}</ul></div>`;
+}
+
+/**
+ * 格式化日期为 YYYY-MM-DD
+ * @param {string|null} iso ISO 时间字符串
+ * @returns {string} 日期，无效时为空字符串
+ */
+function day(iso) {
+  return iso ? String(iso).slice(0, 10) : '';
+}
+
+/**
+ * 把更新日志要点拆成“标题：内容”两部分，标题加粗显示
+ * @param {string} note 单条要点
+ * @returns {string} HTML
+ */
+function noteItem(note) {
+  const m = note.match(/^(.{1,16}?)[：:]\s*(.+)$/);
+  return m ? `<li><b>${esc(m[1])}</b><span>${esc(m[2])}</span></li>` : `<li><span>${esc(note)}</span></li>`;
+}
+
+/**
+ * 渲染发布版本区块：最新版本、下载按钮、下载统计、更新要点、最近版本
+ * @param {object} ctx 渲染上下文
+ * @returns {string} HTML，没有数据时为空
+ */
+function renderReleases(ctx) {
+  const { t, p, config, github } = ctx;
+  const cards = (config.releases || [])
+    .map((cfg) => {
+      const r = github.releases?.[cfg.repo];
+      if (!r) return '';
+      const L = r.latest;
+      const size = L.asset ? ` · ${(L.asset.size / 1048576).toFixed(1)} MB` : '';
+      const history = r.recent
+        .map(
+          (v) => `<li><a href="${esc(v.url)}" target="_blank" rel="noopener"><code>${esc(v.tag)}</code><span>${day(v.published_at)}</span><span>${icon('download')}${compact(v.downloads)}</span></a></li>`,
+        )
+        .join('');
+      return `<article class="card release reveal">
+      <div class="release-main">
+        <div class="release-title">
+          <span class="site-icon">${icon('package')}</span>
+          <div><h3>${esc(cfg.name || cfg.repo)}</h3><p class="muted">${esc(p(cfg.desc))}</p></div>
+        </div>
+        <div class="release-tag"><code>${esc(L.tag)}</code>${L.prerelease ? `<span class="badge">${esc(t('release.prerelease'))}</span>` : ''}<span class="muted">${icon('clock')}${day(L.published_at)}</span></div>
+        <div class="release-stats">
+          <div><b data-count="${r.totalDownloads}">${compact(r.totalDownloads)}</b><span>${esc(t('release.totalDownloads'))}</span></div>
+          <div><b>${compact(L.downloads)}</b><span>${esc(t('release.latestDownloads'))}</span></div>
+          <div><b>${r.total}</b><span>${esc(t('release.versions'))}</span></div>
+        </div>
+        <div class="release-actions">
+          ${L.asset ? `<a class="btn btn-primary" href="${esc(L.asset.url)}" rel="noopener">${icon('download')}${esc(t('release.download'))}<small>${size}</small></a>` : ''}
+          <a class="btn btn-ghost" href="${esc(r.html_url)}" target="_blank" rel="noopener">${icon('tag')}${esc(t('release.allReleases'))}</a>
+          ${cfg.site ? `<a class="btn btn-ghost" href="${esc(cfg.site)}" target="_blank" rel="noopener">${icon('globe')}${esc(t('release.website'))}</a>` : ''}
+        </div>
+      </div>
+      <div class="release-side">
+        ${L.notes.length ? `<h4>${esc(t('release.highlights'))}</h4><ul class="notes">${L.notes.map(noteItem).join('')}</ul>` : ''}
+        <h4>${esc(t('release.history'))}</h4><ul class="history">${history}</ul>
+      </div>
+    </article>`;
+    })
+    .join('');
+  if (!cards) return '';
+  return `<section class="section" id="release" aria-labelledby="release-title">
+  <div class="container">
+    ${sectionHead('release', t('sections.release'))}
+    ${cards}
+  </div>
+</section>`;
+}
+
+/**
+ * 渲染仓库语言分布：按非 fork 仓库的主要语言计数
+ * @param {object} ctx 渲染上下文
+ * @returns {string} HTML，没有数据时为空
+ */
+function renderLanguages(ctx) {
+  const { t, github } = ctx;
+  const counts = {};
+  github.repos.filter((r) => !r.fork && r.language).forEach((r) => (counts[r.language] = (counts[r.language] || 0) + 1));
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  if (!total) return '';
+  const langs = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const color = (l) => LANG_COLORS[l] || 'var(--muted)';
+  const bar = langs.map(([l, n]) => `<i style="width:${((n / total) * 100).toFixed(2)}%;background:${color(l)}" title="${esc(l)}"></i>`).join('');
+  const legend = langs
+    .map(([l, n]) => `<li><i class="lang-dot" style="background:${color(l)}"></i>${esc(l)}<span>${((n / total) * 100).toFixed(1)}%</span></li>`)
+    .join('');
+  return `<h3 class="sub-title reveal">${esc(t('sections.languages'))}</h3><div class="card langs reveal"><div class="lang-bar">${bar}</div><ul class="lang-legend">${legend}</ul></div>`;
+}
+
+/**
+ * 渲染博客最新文章
+ * @param {object} ctx 渲染上下文
+ * @returns {string} HTML，没有配置博客时为空
+ */
+function renderPosts(ctx) {
+  const { t, config, posts } = ctx;
+  if (!config.blog) return '';
+  const list = (posts?.posts || []).slice(0, config.blog.count || 6);
+  const cards = list
+    .map(
+      (post) => `<a class="card post-card reveal" href="${esc(post.url)}" target="_blank" rel="noopener">
+      ${post.date ? `<time datetime="${esc(post.date)}">${day(post.date)}</time>` : ''}
+      <h3>${esc(post.title)}</h3>
+      ${post.summary ? `<p>${esc(post.summary)}</p>` : ''}
+    </a>`,
+    )
+    .join('');
+  return `<section class="section" id="posts" aria-labelledby="posts-title">
+  <div class="container">
+    ${sectionHead('posts', t('sections.posts'), `<a class="more" href="${esc(config.blog.url)}" target="_blank" rel="noopener">${esc(t('posts.more'))} ${icon('external')}</a>`)}
+    ${cards ? `<div class="post-grid">${cards}</div>` : `<p class="card muted reveal">${esc(t('posts.empty'))}</p>`}
+  </div>
+</section>`;
+}
+
+/**
+ * 渲染常用工具标签
+ * @param {object} ctx 渲染上下文
+ * @returns {string} HTML，没有配置时为空
+ */
+function renderTools(ctx) {
+  const { t, p, config } = ctx;
+  if (!config.tools?.length) return '';
+  const groups = config.tools
+    .map((g) => `<div class="tool-group"><h4>${esc(p(g.group))}</h4><div class="tags">${g.items.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div></div>`)
+    .join('');
+  return `<h3 class="sub-title reveal">${esc(t('sections.tools'))}</h3><div class="card tools reveal">${groups}</div>`;
+}
+
+/**
+ * 渲染友情链接，头像加载失败时显示名字首字
+ * @param {object} ctx 渲染上下文
+ * @returns {string} HTML，没有友链时为空
+ */
+function renderFriends(ctx) {
+  const { t, config } = ctx;
+  if (!config.friends?.length) return '';
+  const cards = config.friends
+    .map(
+      (f) => `<a class="card friend reveal" href="${esc(f.url)}" target="_blank" rel="noopener">
+      <span class="friend-avatar" aria-hidden="true">${esc([...f.name.replace(/^[【\[(（].*?[】\])）]/, '')][0] || '?')}${f.avatar ? `<img src="${esc(f.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>
+      <span class="friend-body"><b>${esc(f.name)}</b><small>${esc(f.desc || new URL(f.url).host)}</small></span>
+    </a>`,
+    )
+    .join('');
+  return `<section class="section" id="friends" aria-labelledby="friends-title">
+  <div class="container">
+    ${sectionHead('friends', t('sections.friends'))}
+    <div class="friend-grid">${cards}</div>
+  </div>
+</section>`;
+}
+
+/**
+ * 计算导航中要显示的区块（没有内容的区块不显示）
+ * @param {object} ctx 渲染上下文
+ * @returns {string[]} 区块 id 列表
+ */
+function navKeys(ctx) {
+  const { config } = ctx;
+  return ['about', 'projects', 'posts', 'skills', 'timeline', 'friends', 'contact'].filter((k) => {
+    if (k === 'posts') return !!config.blog;
+    if (k === 'friends') return !!config.friends?.length;
+    if (k === 'timeline') return !!config.timeline?.length;
+    return true;
+  });
 }
 
 /**
@@ -288,6 +474,7 @@ function renderProjects(ctx) {
     ${sectionHead('projects', t('sections.projects'), `<a class="more" href="https://github.com/${esc(config.profile.github)}?tab=repositories" target="_blank" rel="noopener">GitHub ${icon('external')}</a>`)}
     <div class="repo-grid">${featured}</div>
     ${recent ? `<h3 class="sub-title reveal">${esc(t('sections.recent'))}</h3><div class="repo-grid">${recent}</div>` : ''}
+    ${config.features.languages ? renderLanguages(ctx) : ''}
   </div>
 </section>`;
 }
@@ -311,6 +498,7 @@ function renderSkills(ctx) {
   <div class="container">
     ${sectionHead('skills', t('sections.skills'))}
     <ul class="card skills">${bars}</ul>
+    ${renderTools(ctx)}
     ${config.features.contributions ? renderContributions(ctx) : ''}
   </div>
 </section>`;
@@ -396,6 +584,7 @@ function renderFooter(ctx, buildTime) {
   return `<footer class="footer">
   <div class="container footer-inner">
     <p>© ${range} ${esc(p(config.profile.name))} · <span id="running" data-since="${esc(config.site.since)}"></span></p>
+    ${config.features.busuanzi ? `<p class="muted bsz"><span id="busuanzi_container_site_pv" style="display:none">${icon('eye')}${esc(t('footer.pv')).replace('{pv}', '<span id="busuanzi_value_site_pv"></span>')}</span><span id="busuanzi_container_site_uv" style="display:none">${icon('users')}${esc(t('footer.uv')).replace('{uv}', '<span id="busuanzi_value_site_uv"></span>')}</span></p>` : ''}
     <p class="muted">${esc(t('footer.builtWith'))} · ${esc(t('footer.lastBuild'))} <time datetime="${buildTime}">${buildTime.slice(0, 10)}</time></p>
     ${config.site.icp ? `<p class="muted"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">${esc(config.site.icp)}</a></p>` : ''}
   </div>
@@ -426,7 +615,7 @@ function renderPalette(ctx) {
 function clientData(ctx) {
   const { t, p, config, dict } = ctx;
   const commands = [
-    ...['about', 'projects', 'skills', 'timeline', 'contact'].map((k) => ({
+    ...navKeys(ctx).map((k) => ({
       group: t('palette.goTo'),
       label: t(`nav.${k}`),
       href: `#${k}`,
@@ -452,6 +641,8 @@ function clientData(ctx) {
       passed: t('dashboard.passed'),
       empty: t('palette.empty'),
       theme: dict.theme,
+      eggConsole: t('egg.console', { repo: `https://github.com/${config.profile.github}/homepager` }),
+      eggRainbow: t('egg.rainbow'),
     },
     commands,
   };
@@ -469,9 +660,12 @@ export function renderIndex(ctx, buildTime) {
 ${renderHero(ctx)}
 ${renderDashboard(ctx)}
 ${renderAbout(ctx)}
+${renderReleases(ctx)}
 ${renderProjects(ctx)}
+${renderPosts(ctx)}
 ${renderSkills(ctx)}
 ${renderTimeline(ctx)}
+${renderFriends(ctx)}
 ${renderContact(ctx)}
 </main>
 ${renderFooter(ctx, buildTime)}
@@ -546,6 +740,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" hr
 <script>${themeBoot}</script>
 <link rel="stylesheet" href="${base}${assets.css}">
 <script src="${base}${assets.js}" defer></script>
+${config.features.busuanzi && !noindex ? '<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>' : ''}
 </head>
 <body${config.features.loader && !noindex ? ' class="is-loading"' : ''}>
 ${config.features.loader && !noindex ? '<div class="loader" id="loader" aria-hidden="true"><span></span><span></span><span></span></div>' : ''}
