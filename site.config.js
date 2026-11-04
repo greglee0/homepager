@@ -18,7 +18,7 @@ export default {
     },
     keywords: 'Greglee,铭记,AIDE-Plus,Android,个人主页',
     /** 主题色，会用于浏览器地址栏和强调色 */
-    themeColor: '#6366f1',
+    themeColor: '#3f51b5',
     /** 建站日期，用于页脚“已运行 N 天”，留空则不显示 */
     since: '2025-08-03',
     /** 默认语言：zh 或 en，另一种语言会生成在 /en/ 目录下 */
@@ -102,6 +102,41 @@ export default {
     },
   ],
 
+  /** 正在做的事（“此刻在忙”卡片） */
+  now: [
+    {
+      icon: 'code',
+      text: { zh: 'AIDE-Plus 2.3.5：自研 Kotlin 补全与实时报错引擎', en: 'AIDE-Plus 2.3.5: in-house Kotlin completion & diagnostics' },
+    },
+    { icon: 'sparkles', text: { zh: '给 AIDE-Plus 接入 AI 助手', en: 'Bringing an AI assistant into AIDE-Plus' } },
+    { icon: 'terminal', text: { zh: '内置终端与 Gradle 命令构建', en: 'Built-in terminal & Gradle command builds' } },
+    { icon: 'pen', text: { zh: '重写博客和个人主页', en: 'Rebuilding my blog and homepage' } },
+  ],
+
+  /**
+   * 发布版本展示：构建时拉取最新版本、更新要点和累计下载量
+   * repo 填 owner/name；site 为项目官网（可选）
+   */
+  releases: [
+    {
+      repo: 'AndroidIDE-CN/AIDE-Plus',
+      name: 'AIDE-Plus',
+      desc: {
+        zh: '在手机上写代码、编译、打包 APK 的 Android IDE。',
+        en: 'An Android IDE to write, build and package APKs right on your phone.',
+      },
+      site: 'https://plus.androidide.cn',
+    },
+  ],
+
+  /** 博客：构建时依次尝试 feeds，读取最新文章 */
+  blog: {
+    url: 'https://blog.greglee.cn',
+    feeds: ['https://blog.greglee.cn/atom.xml', 'https://blog.greglee.cn/search.xml'],
+    /** 展示文章数量 */
+    count: 6,
+  },
+
   /** 技能，level 为 0-100 的熟练度 */
   skills: [
     { name: 'Java', level: 90 },
@@ -111,6 +146,13 @@ export default {
     { name: 'Git', level: 80 },
     { name: 'JavaScript / Node.js', level: 65 },
     { name: 'C / C++ (NDK)', level: 50 },
+  ],
+
+  /** 常用工具（按分组展示为标签） */
+  tools: [
+    { group: { zh: '开发', en: 'Develop' }, items: ['Android Studio', 'AIDE-Plus', 'IntelliJ IDEA', 'VS Code'] },
+    { group: { zh: '构建', en: 'Build' }, items: ['Gradle', 'Android SDK', 'NDK / CMake', 'Kotlin Compiler'] },
+    { group: { zh: '环境', en: 'Environment' }, items: ['Git', 'GitHub Actions', 'Termux', 'Node.js'] },
   ],
 
   /**
@@ -150,10 +192,44 @@ export default {
     },
   ],
 
+  /** 友情链接（与博客友链同步） */
+  friends: [
+    { name: '【茶】贰猹の小窝', url: 'https://noionion.top/', avatar: 'https://noionion-picture-bed.oss-cn-hangzhou.aliyuncs.com/img/head.jpg', desc: '用这生命中的每一秒，给自己一个不后悔的未来' },
+    { name: 'AriasakaのBlog', url: 'https://blog.yaria.top/', avatar: 'https://img.0v0.my/2024/12/05/67517ba094506.png', desc: '' },
+    { name: '墨七', url: 'https://mo7.cc/', avatar: 'https://file.mo7.cc/static/lxh_gif/lxh_71.gif', desc: '墨染七弦月，笔耕半亩田' },
+    { name: '沐雨酆臻', url: 'https://blg.myfz.fun', avatar: 'https://myfz.fun/blg/logo/logo.png', desc: '沐雨酆臻个人博客' },
+    { name: "Jamie793's blog", url: 'https://blog.jamiexu.cn', avatar: 'https://image.jamiexu.cn/image/icon.jpg', desc: "Jamie793's blog" },
+    { name: '一剪沐橙の小窝', url: 'https://mucute-qwq.github.io/', avatar: 'https://mucute-qwq.github.io/images/avatar.jpg', desc: '一剪沐橙の小窝' },
+  ],
+
+  /** 首屏壁纸：bing 为 true 时使用 Bing 每日壁纸（每天定时构建自动更换） */
+  wallpaper: {
+    bing: true,
+    /** Bing 地区，zh-CN 为中国版壁纸 */
+    mkt: 'zh-CN',
+  },
+
+  /**
+   * 音乐播放器
+   * - songs 不为空时直接使用自定义歌曲：{ title, artist, url, cover, lrc }（lrc 可填歌词文本或地址）
+   * - 否则通过 Meting API 读取歌单：server 可选 netease / tencent，type 可选 playlist / album / song
+   * 默认是网易云热歌榜，换成自己的歌单 id 即可
+   */
+  music: {
+    enable: true,
+    api: 'https://api.i-meto.com/meting/api',
+    server: 'netease',
+    type: 'playlist',
+    id: '3778678',
+    songs: [],
+    /** 默认音量 0-1 */
+    volume: 0.7,
+  },
+
   /** 功能开关 */
   features: {
     /** 首屏加载动画 */
-    loader: true,
+    loader: false,
     /** 一言（每日一句），接口失败时使用本地句子 */
     hitokoto: true,
     /** 时钟和日期 */
@@ -166,8 +242,12 @@ export default {
     recentRepos: true,
     /** 最近活跃仓库展示数量 */
     recentReposCount: 6,
-    /** 鼠标跟随光晕（仅桌面端） */
-    cursorGlow: true,
+    /** 仓库语言分布图 */
+    languages: true,
+    /** 不蒜子访问统计（页脚显示访问量） */
+    busuanzi: true,
+    /** 彩蛋：控制台问候 + 输入 ↑↑↓↓←→←→BA 触发彩虹模式 */
+    easterEgg: true,
     /** 键盘快捷键（T 切换主题，L 切换语言，/ 打开命令面板） */
     shortcuts: true,
   },
