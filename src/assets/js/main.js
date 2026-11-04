@@ -820,15 +820,34 @@
         }
         return;
       }
-      if (!window.fetch || !cfg.api || !cfg.id) return fail();
-      var url = cfg.api + '?server=' + encodeURIComponent(cfg.server) + '&type=' + encodeURIComponent(cfg.type) + '&id=' + encodeURIComponent(cfg.id);
-      fetch(url)
-        .then(function (r) {
-          if (!r.ok) throw new Error(r.status);
-          return r.json();
-        })
-        .then(done)
-        .catch(fail);
+      var apis = [].concat(cfg.api || []);
+      if (!window.fetch || !apis.length || !cfg.id) return fail();
+      var query = '?server=' + encodeURIComponent(cfg.server) + '&type=' + encodeURIComponent(cfg.type) + '&id=' + encodeURIComponent(cfg.id);
+      /**
+       * 依次尝试每个 Meting 接口，单个接口 8 秒超时，全部失败才算失败
+       * @param {number} i 接口下标
+       */
+      var attempt = function (i) {
+        if (i >= apis.length) return fail();
+        var ctrl = window.AbortController ? new AbortController() : null;
+        var timer = setTimeout(function () {
+          if (ctrl) ctrl.abort();
+        }, 8000);
+        fetch(apis[i] + query, ctrl ? { signal: ctrl.signal } : {})
+          .then(function (r) {
+            if (!r.ok) throw new Error(r.status);
+            return r.json();
+          })
+          .then(function (list) {
+            clearTimeout(timer);
+            done(list);
+          })
+          .catch(function () {
+            clearTimeout(timer);
+            attempt(i + 1);
+          });
+      };
+      attempt(0);
     }
 
     /** 加载失败：显示提示，点击标题重试 */

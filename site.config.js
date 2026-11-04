@@ -222,7 +222,8 @@ export default {
    */
   music: {
     enable: true,
-    api: 'https://api.i-meto.com/meting/api',
+    /** Meting 接口，可填多个，前一个失败自动换下一个 */
+    api: ['https://api.i-meto.com/meting/api', 'https://api.injahow.cn/meting/', 'https://meting.qjqq.cn/'],
     server: 'netease',
     type: 'playlist',
     id: '3778678',
