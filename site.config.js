@@ -132,7 +132,7 @@ export default {
   /** 博客：构建时依次尝试 feeds，读取最新文章 */
   blog: {
     url: 'https://blog.greglee.cn',
-    feeds: ['https://blog.greglee.cn/atom.xml', 'https://blog.greglee.cn/search.xml'],
+    feeds: ['https://blog.greglee.cn/atom.xml', 'https://blog.greglee.cn/search.json', 'https://blog.greglee.cn/search.xml'],
     /** 展示文章数量 */
     count: 6,
   },
@@ -202,11 +202,16 @@ export default {
     { name: '一剪沐橙の小窝', url: 'https://mucute-qwq.github.io/', avatar: 'https://mucute-qwq.github.io/images/avatar.jpg', desc: '一剪沐橙の小窝' },
   ],
 
-  /** 首屏壁纸：bing 为 true 时使用 Bing 每日壁纸（每天定时构建自动更换） */
+  /**
+   * 首屏壁纸：bing 为 true 时使用 Bing 每日壁纸（每天定时构建自动更新）
+   * 会抓取多个地区最近约 15 天的壁纸，去重后可以在首屏左右切换
+   */
   wallpaper: {
     bing: true,
-    /** Bing 地区，zh-CN 为中国版壁纸 */
-    mkt: 'zh-CN',
+    /** 抓取的地区，靠前的优先（同一张图优先用它的标题）；留空使用默认的 12 个地区 */
+    markets: ['zh-CN', 'en-US', 'ja-JP', 'en-GB', 'de-DE', 'fr-FR', 'en-IN', 'en-CA', 'en-AU', 'it-IT', 'es-ES', 'pt-BR'],
+    /** 最多保留多少张 */
+    max: 40,
   },
 
   /**
@@ -217,7 +222,8 @@ export default {
    */
   music: {
     enable: true,
-    api: 'https://api.i-meto.com/meting/api',
+    /** Meting 接口，可填多个，前一个失败自动换下一个 */
+    api: ['https://api.i-meto.com/meting/api', 'https://api.injahow.cn/meting/', 'https://meting.qjqq.cn/'],
     server: 'netease',
     type: 'playlist',
     id: '3778678',

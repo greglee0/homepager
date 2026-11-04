@@ -70,6 +70,28 @@ export function parseFeed(xml, feedUrl) {
 }
 
 /**
+ * 解析博客的 search.json（数组，每项含 title、path/url、date、content），只保留带日期的文章
+ * @param {string} text JSON 文本
+ * @param {string} feedUrl 地址，用于补全相对链接
+ * @returns {Array<{ title: string, url: string, date: string|null, summary: string }>}
+ */
+export function parseJsonFeed(text, feedUrl) {
+  const data = JSON.parse(text);
+  const list = Array.isArray(data) ? data : data.items || data.posts || [];
+  return list
+    .filter((p) => p && p.title && (p.path || p.url) && p.date)
+    .map((p) => {
+      const parsed = new Date(p.date);
+      return {
+        title: excerpt(String(p.title), 80),
+        url: new URL(p.path || p.url, feedUrl).href,
+        date: isNaN(parsed) ? null : parsed.toISOString(),
+        summary: excerpt(String(p.summary || p.content || '')),
+      };
+    });
+}
+
+/**
  * 读取博客最新文章：依次尝试配置的 feed 地址，第一个成功的为准，全部失败时使用缓存
  * @param {object} config 站点配置
  * @param {string} root 项目根目录
@@ -86,7 +108,8 @@ export async function loadPosts(config, root, opts = {}) {
     try {
       const res = await fetch(url, { headers: { 'User-Agent': 'homepager-build' }, signal: AbortSignal.timeout(15000) });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      let posts = parseFeed(await res.text(), url);
+      const body = await res.text();
+      let posts = /\.json(\?|$)/.test(url) ? parseJsonFeed(body, url) : parseFeed(body, url);
       if (!posts.length) throw new Error('没有解析到文章');
       // 有日期就按日期倒序；search.xml 没有日期则保持原顺序
       if (posts.every((p) => p.date)) posts.sort((a, b) => b.date.localeCompare(a.date));
