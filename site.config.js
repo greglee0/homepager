@@ -192,14 +192,27 @@ export default {
     },
   ],
 
-  /** 友情链接（与博客友链同步） */
+  /**
+   * 友情链接（与博客 source/_data/link.yml 同步），按分组展示
+   * 每组：{ name, desc, links: [{ name, url, avatar, desc }] }；name、desc 可写成 { zh, en }
+   */
   friends: [
-    { name: '【茶】贰猹の小窝', url: 'https://noionion.top/', avatar: 'https://noionion-picture-bed.oss-cn-hangzhou.aliyuncs.com/img/head.jpg', desc: '用这生命中的每一秒，给自己一个不后悔的未来' },
-    { name: 'AriasakaのBlog', url: 'https://blog.yaria.top/', avatar: 'https://img.0v0.my/2024/12/05/67517ba094506.png', desc: '' },
-    { name: '墨七', url: 'https://mo7.cc/', avatar: 'https://file.mo7.cc/static/lxh_gif/lxh_71.gif', desc: '墨染七弦月，笔耕半亩田' },
-    { name: '沐雨酆臻', url: 'https://blg.myfz.fun', avatar: 'https://myfz.fun/blg/logo/logo.png', desc: '沐雨酆臻个人博客' },
-    { name: "Jamie793's blog", url: 'https://blog.jamiexu.cn', avatar: 'https://image.jamiexu.cn/image/icon.jpg', desc: "Jamie793's blog" },
-    { name: '一剪沐橙の小窝', url: 'https://mucute-qwq.github.io/', avatar: 'https://mucute-qwq.github.io/images/avatar.jpg', desc: '一剪沐橙の小窝' },
+    {
+      name: { zh: '参考博客', en: 'Reference blogs' },
+      desc: { zh: '欢迎互换友链', en: 'Link exchanges welcome' },
+      links: [
+        { name: '【茶】贰猹の小窝', url: 'https://noionion.top/', avatar: 'https://noionion-picture-bed.oss-cn-hangzhou.aliyuncs.com/img/head.jpg', desc: '用这生命中的每一秒，给自己一个不后悔的未来' },
+        { name: 'AriasakaのBlog', url: 'https://blog.yaria.top/', avatar: 'https://img.0v0.my/2024/12/05/67517ba094506.png', desc: '' },
+        { name: '墨七', url: 'https://mo7.cc/', avatar: 'https://file.mo7.cc/static/lxh_gif/lxh_71.gif', desc: '墨染七弦月，笔耕半亩田' },
+      ],
+    },
+    {
+      name: { zh: '群友的博客', en: 'Friends from the group' },
+      desc: { zh: '一些大佬', en: 'Some awesome folks' },
+      links: [
+        { name: '沐雨酆臻', url: 'https://blg.myfz.fun', avatar: 'https://myfz.fun/blg/logo/logo.png', desc: '沐雨酆臻个人博客' },
+      ],
+    },
   ],
 
   /**

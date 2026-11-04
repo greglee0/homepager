@@ -1754,6 +1754,38 @@ html[data-theme='dark'] .cal-img {
 /* ==========================================================================
    友链、联系
    ========================================================================== */
+.friend-group + .friend-group {
+  margin-top: 32px;
+}
+
+.friend-group-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.friend-group-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.friend-group-head span {
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.friend-group-head em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
 .friend-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
