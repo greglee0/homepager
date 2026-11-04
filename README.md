@@ -1,248 +1,63 @@
-简体中文 | [English](./README_EN.md)
+# Homepager
 
-> [!IMPORTANT]
-> ## 致大家
-> 此项目最初只是一个简单的主页。然而，随着越来越多的小伙伴发现了这个项目，它受到了大量本不应有的关注。而且，此项目作为初学前端的作品，其代码相当杂乱且质量低下。此外，该项目还遭到众多不明资源站或下载站的倒卖，致使许多不明真相的购买者从源代码中找到本人的联系方式进行问题咨询或提出功能需求。由于目前个人原因，该仓库进行存档，敬请谅解！
+铭记（Greglee）的个人主页。零依赖的 Node.js 静态站点生成器，推送后由 GitHub Actions 自动构建并部署到 GitHub Pages。
 
-<p>
-<strong><h2>無名の主页</h2></strong>
-简单的小主页，原来的看够了，重新弄了一个
-</p>
+## 功能
 
-![無名の主页](/screenshots/main.jpg)
+- 首屏：GitHub 头像光环、按时间段变化的问候语、身份打字机轮播、签名、社交按钮
+- 此时此刻：实时时钟、一言（接口失败自动用本地句子，点击换一句）、今日 / 本周 / 本月 / 本年进度条
+- 关于我：简介、标签、GitHub 统计（公开仓库、星标、关注者，数字滚动动画）、常用站点导航
+- 项目：精选仓库卡片（构建时从 GitHub 拉取星标、语言、更新时间）+ 最近活跃仓库
+- 技能条、GitHub 贡献日历（随深浅主题变色）、时间线、联系方式（QQ 等可一键复制）
+- 浅色 / 深色 / 跟随系统 三态主题，无闪白
+- 中英双语（`/` 中文，`/en/` 英文）
+- 命令面板：按 `/` 或 `Ctrl+K` 打开；`T` 切换主题，`L` 切换语言
+- 加载动画、滚动进入动画、导航高亮、回到顶部（外圈显示阅读进度）、鼠标光晕
+- 手机 / 平板 / 电脑自适应，适配刘海屏安全区，尊重系统“减少动画”设置
+- SEO：canonical、hreflang、Open Graph、sitemap.xml、robots.txt、PWA manifest、404 页面
 
-> 主页的 Logo 字体已经过压缩，若用本站 Logo 以外的字母会变回默认字体，这里是 [完整字体](https://file.imsyy.top/font/Other/Pacifico-Regular.ttf)，若无法下载，可将字体目录下的 `Pacifico-Regular-all.ttf` 进行替换
+## 修改内容
 
-### 👀 Demo
+几乎所有内容都在 [`site.config.js`](./site.config.js) 里：个人资料、社交链接、常用站点、技能、精选项目、时间线、功能开关。
+带 `{ zh, en }` 的字段是双语文本，只写字符串则两种语言共用。界面固定文字在 `src/i18n/` 中。
 
-> 由于 CDN 缓存原因，查看最新效果可能需要 `Ctrl` + `F5` 强制刷新浏览器缓存
+## 本地开发
 
-- [無名の主页](https://www.imsyy.top)
-- [無名の主页 - Dev](https://home-imsyy.vercel.app)
-- [無名の主页 - 备用线路](https://home-5iw.pages.dev)
-
-### 🎉 功能
-
-- [x] 载入动画
-- [x] 站点简介
-- [x] Hitokoto 一言
-- [x] 日期及时间
-- [x] 实时天气
-- [x] 时光进度条
-- [x] 音乐播放器
-- [x] 移动端适配
-
-### ⚙️ 自动部署
-
-如果遇到构建环境或者打包过程出现错误，则可以采用 `Github Actions` 来进行自动构建
-
-- 在成功 `fork` 仓库后，前往 `Actions` 页面，若您是首次开启，则会出现下面的提示，点击开启
-
-  ![步骤1](/screenshots/step1.jpg)
-
-- 然后在仓库中进行任意修改后均会触发工作流的运行，在工作流完成后，会在下方生成一个可供下载的压缩包，这就是构建出的静态文件，可自行上传至服务器
-
-  ![步骤2](/screenshots/step2.jpg)
-
-### ⚙️ 手动部署
-
-- **安装** [node.js](https://nodejs.org/zh-cn/) **环境**
-
-  > node > 16.16.0  
-  > npm > 8.15.0
-
-- 然后以 **管理员权限** 运行 `cmd` 终端，并 `cd` 到 项目根目录
-- 在 `终端` 中输入：
+需要 Node.js 18.17 及以上，无需安装任何依赖。
 
 ```bash
-# 安装 pnpm
-npm install -g pnpm
-
-# 安装依赖
-pnpm install
-
-# 预览
-pnpm dev
-
-# 构建
-pnpm build
+npm run dev            # 开发服务器 http://localhost:4000，修改后自动刷新
+npm run dev:offline    # 不请求 GitHub，只用 data/github.json 缓存
+npm run build          # 生成 dist/
+npm run check          # 检查语言文件、脚本语法、页面内链接
 ```
 
-> 构建完成后，静态资源会在 **`dist` 目录** 中生成，可将 **`dist` 文件夹下的文件**上传至服务器，也可使用 `Vercel` 等托管平台一键导入并自动部署
+可选环境变量：
 
-### ⚙️ Docker 部署
+| 变量 | 作用 |
+| --- | --- |
+| `GITHUB_TOKEN` | 提高 GitHub 接口限额，并启用贡献日历（GraphQL 需要 token） |
+| `SITE_BASE` | 部署子路径，例如 `/homepager`；自定义域名时留空 |
+| `SITE_URL` | 覆盖 `site.url` |
 
-> 安装及配置 Docker 将不在此处说明，请自行解决
+## 部署
 
-```bash
-# 构建
-docker build -t home .
-# 运行
-docker run -p 12445:12445 -d home
-```
+1. 仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
+2. 推送到 `dev`（或 `main` / `master`）分支即自动部署，每天也会定时重新构建一次以刷新 GitHub 数据。
+3. 想用自定义域名（例如 `greglee.cn`）：在 `site.config.js` 填 `site.cname` 和 `site.url`，再到域名服务商添加 CNAME 记录指向 `greglee0.github.io`。
+4. 可选：添加名为 `GH_PROFILE_TOKEN` 的仓库 Secret（只读的个人 token），贡献日历会更完整。
 
-### ⚙️ Vercel 部署
-
-> 其他部署平台大致相同，在此不做说明
-
-1. 点击本仓库右上角的 `Fork`，复制本仓库到你的 `GitHub` 账号
-2. 复制 `/.env.example` 文件并重命名为 `/.env`（ 重要 ）
-3. 按需修改 `/.env` 文件中的配置
-4. 点击 `Deploy`，即可成功部署
-
-### 网站链接
-
-在 `src/assets/siteLinks.json` 中可以自定义网站链接（以指向自己的网站）:
-
-```json
-{
-  "icon": "Blog",
-  "name": "博客",
-  "link": "https://blog.imsyy.top/"
-},
-```
-
-其中 `icon` 网站链接的图标可以在 `src/components/Links/index.vue` 中添加:
-
-```js
-// 可前往 https://www.xicons.org 自行挑选并在此处引入
-// 此处引入的是 fa 类型
-import {
-  Link,
-  Blog,
-  CompactDisc,
-  Cloud,
-  Compass,
-  Book,
-  Fire,
-  LaptopCode,
-} from "@vicons/fa";
-
-...
-
-// 网站链接图标
-const siteIcon = {
-  Blog,
-  Cloud,
-  CompactDisc,
-  Compass,
-  Book,
-  Fire,
-  LaptopCode,
-};
-```
-
-### 社交链接
-
-在 `src/assets/socialLinks.json` 中可以自定义社交链接。
-
-### 天气
-
-天气及地区获取需要 `高德开放平台` 相关 API
-
-- 前往 [高德开放平台控制台](https://console.amap.com/dev/index) 创建一个 `Web 服务` 类型的 `Key`，并将 `Key` 填入 `.env` 中的 `VITE_WEATHER_KEY` 中
-
-也可自行更换其他方式
-
-### 音乐
-
-> 本项目采用了基于 `MetingJS` 的 `Aplayer` 音乐播放器，可实现快速自定义歌单  
-> \*仅支持 **中国大陆地区**
-
-请在 `.env` 文件中更改歌曲相关参数即可实现自定义歌单列表
-
-```bash
-# 歌曲 API 地址
-VITE_SONG_API = "https://api-meting.imsyy.top"
-# 歌曲服务器 ( netease-网易云, tencent-qq音乐 )
-VITE_SONG_SERVER = "netease"
-# 播放类型 ( song-歌曲, playlist-播放列表, album-专辑, search-搜索, artist-艺术家 )
-VITE_SONG_TYPE = "playlist"
-# 播放 ID
-VITE_SONG_ID = "7452421335"
-```
-
-### 字体
-
-现采用 `HarmonyOS Sans` 开源字体，采用字体拆分，提升加载速度
-
-> 由于本站 `CDN` 已开启防盗链，**非本站域名不可访问**，请将字体引入链接更改为下方内容，否则 **自定义字体将失效**
->
-> `https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css`
-
-<details>
-<summary>旧版方式</summary>
-
-> 由于本项目引入了中文字体，需要压缩中文字体以提高网页加载速度（ 也可以取消使用中文字体 ）
-
-#### 中文字体去除繁体
-
-- 安装 `Python 3.7` 和 `pip`
-- 运行 `pip install fonttools`
-- 下载 [sc_unicode.txt](https://gist.githubusercontent.com/imaegoo/d64e5088b723c2e02c40985f55ff12db/raw/5ebd2ce49418c73459a9dfe050483409306a6c1d/sc_unicode.txt)
-- 运行 `pyftsubset 字体名称.ttf --unicodes-file=sc_unicode.txt`
-
-#### 字体进一步压缩
-
-- 编译安装 `Google woff2`
-
-```bash
-sudo apt-get install -y git g++ make
-git clone --recursive https://github.com/google/woff2.git
-cd woff2
-make clean all
-```
-
-- 再压缩字体
+## 目录结构
 
 ```
-./woff2_compress ./字体名称.ttf
+site.config.js        站点配置（主要改这里）
+scripts/build.js      构建脚本
+scripts/dev.js        开发服务器（热刷新）
+scripts/check.js      构建检查
+scripts/lib/          GitHub 数据拉取、工具函数
+src/templates/        页面模板与图标
+src/assets/           CSS 与前端脚本
+src/i18n/             界面文字（中 / 英）
+src/public/           原样复制的静态文件（favicon 等）
+data/github.json      GitHub 数据缓存，接口失败时使用
 ```
-
-- 最终可对原字体进行缓加载，**先行加载压缩后的字体**
-
-> 详细信息可前往 [虹墨空间站](https://www.imaegoo.com/2020/chinese-font-compress/) 查看原文
-
-</details>
-
-### 网站图标及网站背景
-
-#### 网站背景
-
-可以在 `public/images` 中修改网站背景
-
-如果想要添加更多的本地图片作为网站背景，可以将图片重命名 `background+数字` 的形式，并在 `src/components/Background/index.vue` 中进行修改：
-
-```js
-if (type == 0) {
-  // 修改此处 Math.random() 后面的第一个数字为图片的数量
-  bgUrl.value = `/images/background${Math.floor(Math.random() * 10 + 1)}.webp`;
-}
-```
-
-#### 网站图标
-
-可以在 `public/images/icon` 中修改网站图标。
-
-### 技术栈
-
-- [Vue](https://cn.vuejs.org/)
-- [Vite](https://vitejs.cn/vite3-cn/)
-- [Pinia](https://pinia.vuejs.org/zh/)
-- [IconPark](https://iconpark.oceanengine.com/official)
-- [xicons](https://xicons.org/)
-- [Aplayer](https://aplayer.js.org/)
-
-### API
-
-- [韩小韩 WebAPI 接口](https://api.vvhan.com/)
-- [搏天 API](https://api.btstu.cn/doc/sjbz.php)
-- [教书先生 API](https://api.oioweb.cn/doc/weather/GetWeather)
-- [高德开放平台](https://lbs.amap.com/)
-- [Hitokoto 一言](https://hitokoto.cn/)
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=imsyy/home&type=Date)](https://star-history.com/#imsyy/home&Date)
-
-<a title="SSL" target="_blank" href="https://myssl.com/seal/detail?domain=blog.imsyy.top"><img src="https://img.shields.io/badge/MySSL-安全认证-brightgreen"></a>&nbsp;<a title="CDN" target="_blank" href="https://cdnjs.com/"><img src="https://img.shields.io/badge/CDN-Cloudflare-blue"></a>&nbsp;<a title="Copyright" target="_blank" href="https://imsyy.top/"><img src="https://img.shields.io/badge/Copyright%20%C2%A9%202020--2023-%E7%84%A1%E5%90%8D-red"></a>

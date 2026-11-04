@@ -1,0 +1,117 @@
+{
+  "user": {
+    "login": "greglee0",
+    "name": null,
+    "avatar_url": "https://avatars.githubusercontent.com/u/65427441?v=4",
+    "bio": null,
+    "public_repos": null,
+    "followers": null,
+    "following": null,
+    "html_url": "https://github.com/greglee0",
+    "created_at": null
+  },
+  "repos": [
+    {
+      "full_name": "greglee0/blog",
+      "name": "blog",
+      "description": null,
+      "html_url": "https://github.com/greglee0/blog",
+      "homepage": null,
+      "language": "Stylus",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2026-05-06T20:28:18Z",
+      "topics": []
+    },
+    {
+      "full_name": "greglee0/greglee0.github.io",
+      "name": "greglee0.github.io",
+      "description": "myBlog",
+      "html_url": "https://github.com/greglee0/greglee0.github.io",
+      "homepage": null,
+      "language": "HTML",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2026-01-30T16:19:11Z",
+      "topics": []
+    },
+    {
+      "full_name": "greglee0/homepager",
+      "name": "homepager",
+      "description": "个人主页，我的个人主页，个人主页源码，主页模板，homepage",
+      "html_url": "https://github.com/greglee0/homepager",
+      "homepage": "https://www.imsyy.top",
+      "language": null,
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "fork": true,
+      "archived": false,
+      "pushed_at": "2025-05-29T09:39:04Z",
+      "topics": []
+    }
+  ],
+  "featured": {
+    "AndroidIDE-CN/AIDE-Plus": {
+      "full_name": "AndroidIDE-CN/AIDE-Plus",
+      "name": "AIDE-Plus",
+      "description": "AIDE Plus资源发布库",
+      "html_url": "https://github.com/AndroidIDE-CN/AIDE-Plus",
+      "homepage": "https://plus.androidide.cn",
+      "language": null,
+      "stargazers_count": 172,
+      "forks_count": 4,
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2026-10-21T17:05:20Z",
+      "topics": []
+    },
+    "AndroidIDE-CN/plus.androidide.cn": {
+      "full_name": "AndroidIDE-CN/plus.androidide.cn",
+      "name": "plus.androidide.cn",
+      "description": "AIDE+官网",
+      "html_url": "https://github.com/AndroidIDE-CN/plus.androidide.cn",
+      "homepage": "http://plus.androidide.cn",
+      "language": "Vue",
+      "stargazers_count": 7,
+      "forks_count": 7,
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2025-06-19T18:07:50Z",
+      "topics": []
+    },
+    "greglee0/blog": {
+      "full_name": "greglee0/blog",
+      "name": "blog",
+      "description": null,
+      "html_url": "https://github.com/greglee0/blog",
+      "homepage": null,
+      "language": "Stylus",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "fork": false,
+      "archived": false,
+      "pushed_at": "2026-05-06T20:28:18Z",
+      "topics": []
+    },
+    "greglee0/homepager": {
+      "full_name": "greglee0/homepager",
+      "name": "homepager",
+      "description": "个人主页，我的个人主页，个人主页源码，主页模板，homepage",
+      "html_url": "https://github.com/greglee0/homepager",
+      "homepage": "https://www.imsyy.top",
+      "language": null,
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "fork": true,
+      "archived": false,
+      "pushed_at": "2025-05-29T09:39:04Z",
+      "topics": []
+    }
+  },
+  "contributions": null,
+  "fetchedAt": "2026-11-04T15:55:55.096427Z"
+}
