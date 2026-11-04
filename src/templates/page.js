@@ -415,25 +415,63 @@ function renderTools(ctx) {
 }
 
 /**
- * 渲染友情链接，头像加载失败时显示名字首字
+ * 把友链配置整理成分组列表
+ *
+ * 支持两种写法：分组 { name, desc, links: [...] }，或旧版的扁平友链 { name, url }。
+ * 扁平的友链会合并到一个没有标题的分组里。
+ * @param {Array<object>} [friends] config.friends
+ * @returns {Array<{ name: any, desc: any, links: object[] }>} 非空的分组
+ */
+function friendGroups(friends) {
+  const groups = [];
+  let loose = null;
+  for (const item of friends || []) {
+    if (Array.isArray(item?.links)) {
+      groups.push(item);
+    } else if (item?.url) {
+      if (!loose) groups.push((loose = { links: [] }));
+      loose.links.push(item);
+    }
+  }
+  return groups.filter((g) => g.links.length);
+}
+
+/**
+ * 渲染一张友链卡片，头像加载失败时显示名字首字
+ * @param {object} f 友链 { name, url, avatar, desc }
+ * @returns {string} HTML
+ */
+function friendCard(f) {
+  const initial = [...f.name.replace(/^[【\[(（].*?[】\])）]/, '')][0] || '?';
+  return `<a class="card friend reveal" href="${esc(f.url)}" target="_blank" rel="noopener">
+      <span class="friend-avatar" aria-hidden="true">${esc(initial)}${f.avatar ? `<img src="${esc(f.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>
+      <span class="friend-body"><b>${esc(f.name)}</b><small>${esc(f.desc || new URL(f.url).host)}</small></span>
+    </a>`;
+}
+
+/**
+ * 渲染友情链接区块，按分组显示（分组标题 + 说明 + 卡片网格）
  * @param {object} ctx 渲染上下文
  * @returns {string} HTML，没有友链时为空
  */
 function renderFriends(ctx) {
-  const { t, config } = ctx;
-  if (!config.friends?.length) return '';
-  const cards = config.friends
-    .map(
-      (f) => `<a class="card friend reveal" href="${esc(f.url)}" target="_blank" rel="noopener">
-      <span class="friend-avatar" aria-hidden="true">${esc([...f.name.replace(/^[【\[(（].*?[】\])）]/, '')][0] || '?')}${f.avatar ? `<img src="${esc(f.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>
-      <span class="friend-body"><b>${esc(f.name)}</b><small>${esc(f.desc || new URL(f.url).host)}</small></span>
-    </a>`,
-    )
+  const { t, p, config } = ctx;
+  const groups = friendGroups(config.friends);
+  if (!groups.length) return '';
+  const body = groups
+    .map((g) => {
+      const name = g.name ? p(g.name) : '';
+      const desc = g.desc ? p(g.desc) : '';
+      const head = name
+        ? `<div class="friend-group-head"><h3>${esc(name)}</h3>${desc ? `<span>${esc(desc)}</span>` : ''}<em>${g.links.length}</em></div>`
+        : '';
+      return `<div class="friend-group">${head}<div class="friend-grid">${g.links.map(friendCard).join('')}</div></div>`;
+    })
     .join('');
   return `<section class="section" id="friends" aria-labelledby="friends-title">
   <div class="container">
     ${sectionHead('friends', t('sections.friends'))}
-    <div class="friend-grid">${cards}</div>
+    ${body}
   </div>
 </section>`;
 }
@@ -447,7 +485,7 @@ function navKeys(ctx) {
   const { config } = ctx;
   return ['about', 'projects', 'posts', 'skills', 'timeline', 'friends', 'contact'].filter((k) => {
     if (k === 'posts') return !!config.blog;
-    if (k === 'friends') return !!config.friends?.length;
+    if (k === 'friends') return friendGroups(config.friends).length > 0;
     if (k === 'timeline') return !!config.timeline?.length;
     return true;
   });
