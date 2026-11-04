@@ -132,7 +132,7 @@ export default {
   /** 博客：构建时依次尝试 feeds，读取最新文章 */
   blog: {
     url: 'https://blog.greglee.cn',
-    feeds: ['https://blog.greglee.cn/atom.xml', 'https://blog.greglee.cn/search.xml'],
+    feeds: ['https://blog.greglee.cn/atom.xml', 'https://blog.greglee.cn/search.json', 'https://blog.greglee.cn/search.xml'],
     /** 展示文章数量 */
     count: 6,
   },
