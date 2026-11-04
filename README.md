@@ -8,6 +8,11 @@
 - 此时此刻：实时时钟、一言（接口失败自动用本地句子，点击换一句）、今日 / 本周 / 本月 / 本年进度条
 - 关于我：简介、标签、GitHub 统计（公开仓库、星标、关注者，数字滚动动画）、常用站点导航
 - 项目：精选仓库卡片（构建时从 GitHub 拉取星标、语言、更新时间）+ 最近活跃仓库
+- 此刻在忙：当前正在做的事情
+- 最新版本：构建时拉取 AIDE-Plus 最新 Release、更新要点、累计下载量、最近版本，并提供 APK 直链下载
+- 最新文章：构建时读取博客 `atom.xml`（失败时尝试 `search.xml`，再失败用 `data/posts.json` 缓存）
+- 仓库语言分布、常用工具、友情链接（头像加载失败显示首字）
+- 页脚不蒜子访问量；彩蛋：控制台问候，输入 ↑↑↓↓←→←→BA 开启彩虹模式
 - 技能条、GitHub 贡献日历（随深浅主题变色）、时间线、联系方式（QQ 等可一键复制）
 - 浅色 / 深色 / 跟随系统 三态主题，无闪白
 - 中英双语（`/` 中文，`/en/` 英文）
@@ -54,10 +59,11 @@ site.config.js        站点配置（主要改这里）
 scripts/build.js      构建脚本
 scripts/dev.js        开发服务器（热刷新）
 scripts/check.js      构建检查
-scripts/lib/          GitHub 数据拉取、工具函数
+scripts/lib/          GitHub / 博客 feed 数据拉取、工具函数
 src/templates/        页面模板与图标
 src/assets/           CSS 与前端脚本
 src/i18n/             界面文字（中 / 英）
 src/public/           原样复制的静态文件（favicon 等）
 data/github.json      GitHub 数据缓存，接口失败时使用
+data/posts.json       博客文章缓存
 ```
