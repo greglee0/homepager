@@ -18,7 +18,7 @@ export default {
     },
     keywords: 'Greglee,铭记,AIDE-Plus,Android,个人主页',
     /** 主题色，会用于浏览器地址栏和强调色 */
-    themeColor: '#6366f1',
+    themeColor: '#3f51b5',
     /** 建站日期，用于页脚“已运行 N 天”，留空则不显示 */
     since: '2025-08-03',
     /** 默认语言：zh 或 en，另一种语言会生成在 /en/ 目录下 */
@@ -202,10 +202,34 @@ export default {
     { name: '一剪沐橙の小窝', url: 'https://mucute-qwq.github.io/', avatar: 'https://mucute-qwq.github.io/images/avatar.jpg', desc: '一剪沐橙の小窝' },
   ],
 
+  /** 首屏壁纸：bing 为 true 时使用 Bing 每日壁纸（每天定时构建自动更换） */
+  wallpaper: {
+    bing: true,
+    /** Bing 地区，zh-CN 为中国版壁纸 */
+    mkt: 'zh-CN',
+  },
+
+  /**
+   * 音乐播放器
+   * - songs 不为空时直接使用自定义歌曲：{ title, artist, url, cover, lrc }（lrc 可填歌词文本或地址）
+   * - 否则通过 Meting API 读取歌单：server 可选 netease / tencent，type 可选 playlist / album / song
+   * 默认是网易云热歌榜，换成自己的歌单 id 即可
+   */
+  music: {
+    enable: true,
+    api: 'https://api.i-meto.com/meting/api',
+    server: 'netease',
+    type: 'playlist',
+    id: '3778678',
+    songs: [],
+    /** 默认音量 0-1 */
+    volume: 0.7,
+  },
+
   /** 功能开关 */
   features: {
     /** 首屏加载动画 */
-    loader: true,
+    loader: false,
     /** 一言（每日一句），接口失败时使用本地句子 */
     hitokoto: true,
     /** 时钟和日期 */
@@ -218,8 +242,6 @@ export default {
     recentRepos: true,
     /** 最近活跃仓库展示数量 */
     recentReposCount: 6,
-    /** 鼠标跟随光晕（仅桌面端） */
-    cursorGlow: true,
     /** 仓库语言分布图 */
     languages: true,
     /** 不蒜子访问统计（页脚显示访问量） */

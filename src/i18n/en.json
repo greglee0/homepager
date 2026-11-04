@@ -16,7 +16,8 @@
     "hello": "Hi, I'm",
     "scroll": "Scroll down",
     "viewProjects": "See my projects",
-    "contactMe": "Get in touch"
+    "contactMe": "Get in touch",
+    "wallpaper": "Today's Bing wallpaper"
   },
   "sections": {
     "about": "About me",
@@ -123,5 +124,22 @@
   "egg": {
     "console": "Hey curious developer! Source at {repo}. Stars welcome ⭐",
     "rainbow": "🌈 Rainbow mode on"
+  },
+  "music": {
+    "title": "Music",
+    "loading": "Loading playlist…",
+    "failed": "Failed to load playlist, tap to retry",
+    "play": "Play",
+    "pause": "Pause",
+    "prev": "Previous",
+    "next": "Next",
+    "list": "Playlist",
+    "seek": "Seek",
+    "volume": "Volume",
+    "mode": {
+      "list": "Repeat all",
+      "one": "Repeat one",
+      "random": "Shuffle"
+    }
   }
 }

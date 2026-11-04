@@ -27,11 +27,12 @@ const LANG_COLORS = {
  * @param {object} opts.dict 当前语言字典
  * @param {object} opts.github GitHub 数据
  * @param {object} [opts.posts] 博客文章数据
+ * @param {object|null} [opts.bing] Bing 每日壁纸数据
  * @param {string} opts.base 站点部署的子路径，例如 /homepager/
  * @param {object} opts.assets 带指纹的静态资源文件名
  * @returns {object} 渲染上下文
  */
-export function createContext({ config, lang, dict, github, posts, base, assets }) {
+export function createContext({ config, lang, dict, github, posts, bing, base, assets }) {
   const otherLang = lang === 'zh' ? 'en' : 'zh';
   /** 生成某个语言首页的相对地址 */
   const langHref = (l) => (l === config.site.defaultLang ? base : `${base}${l}/`);
@@ -41,6 +42,7 @@ export function createContext({ config, lang, dict, github, posts, base, assets 
     dict,
     github,
     posts,
+    bing,
     base,
     assets,
     otherLang,
@@ -100,32 +102,39 @@ function renderHeader(ctx) {
 }
 
 /**
- * 渲染首屏：头像、问候、名字、打字机、签名、按钮和社交图标
+ * 渲染首屏：Bing 每日壁纸背景、头像、问候、名字、身份轮播、签名、按钮和社交图标
  * @param {object} ctx 渲染上下文
  * @returns {string} HTML
  */
 function renderHero(ctx) {
-  const { t, p, config, github } = ctx;
+  const { t, p, config, github, bing } = ctx;
   const avatar = config.profile.avatar || github.user?.avatar_url || `https://github.com/${config.profile.github}.png`;
   const roles = p(config.profile.roles) || [];
-  return `<section class="hero" id="top">
-  <div class="hero-bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+  // 手机竖屏使用竖版壁纸，节省流量也更清晰
+  const wallpaper = bing
+    ? `<picture class="hero-wallpaper" aria-hidden="true">
+      <source media="(max-width: 720px) and (orientation: portrait)" srcset="${esc(bing.mobile)}">
+      <img src="${esc(bing.desktop)}" alt="" fetchpriority="high" decoding="async">
+    </picture><div class="hero-scrim" aria-hidden="true"></div>`
+    : '';
+  const credit = bing
+    ? `<a class="wallpaper-credit" href="${esc(bing.link)}" target="_blank" rel="noopener" title="${esc(bing.copyright)}">${icon('image')}<span>${esc(t('hero.wallpaper'))} · ${esc(bing.title || bing.copyright)}</span></a>`
+    : '';
+  return `<section class="hero${bing ? ' has-wallpaper' : ''}" id="top">
+  ${wallpaper}
   <div class="container hero-inner">
-    <div class="avatar-wrap reveal">
-      <img class="avatar" src="${esc(avatar)}" alt="${esc(p(config.profile.name))}" width="160" height="160" fetchpriority="high">
-      <span class="status-dot" title="online"></span>
-    </div>
-    <p class="hero-greet reveal" id="greet">${esc(t('hero.hello'))}</p>
-    <h1 class="hero-name reveal">${esc(p(config.profile.name))}</h1>
-    <p class="hero-role reveal"><span id="typing" data-roles="${esc(JSON.stringify(roles))}">${esc(roles[0] || '')}</span><span class="caret" aria-hidden="true"></span></p>
-    <p class="hero-motto reveal">${esc(p(config.profile.motto))}</p>
-    <div class="hero-cta reveal">
+    <img class="avatar" src="${esc(avatar)}" alt="${esc(p(config.profile.name))}" width="112" height="112">
+    <p class="hero-greet" id="greet">${esc(t('hero.hello'))}</p>
+    <h1 class="hero-name">${esc(p(config.profile.name))}</h1>
+    <p class="hero-role"><span id="typing" data-roles="${esc(JSON.stringify(roles))}">${esc(roles[0] || '')}</span><span class="caret" aria-hidden="true"></span></p>
+    <p class="hero-motto">${esc(p(config.profile.motto))}</p>
+    <div class="hero-cta">
       <a class="btn btn-primary" href="#projects">${icon('folder')}${esc(t('hero.viewProjects'))}</a>
       <a class="btn btn-ghost" href="#contact">${icon('mail')}${esc(t('hero.contactMe'))}</a>
     </div>
-    <div class="social reveal">${renderSocial(ctx)}</div>
+    <div class="social">${renderSocial(ctx)}</div>
   </div>
-  <a class="scroll-hint" href="#dashboard" aria-label="${esc(t('hero.scroll'))}">${icon('chevron-down')}</a>
+  ${credit}
 </section>`;
 }
 
@@ -158,7 +167,7 @@ function renderSocial(ctx, withLabel = false) {
 function renderDashboard(ctx) {
   const { t, config } = ctx;
   const f = config.features;
-  if (!f.clock && !f.hitokoto && !f.timeProgress) return '';
+  if (!f.clock && !f.hitokoto && !f.timeProgress && !config.music?.enable) return '';
   const progress = ['today', 'week', 'month', 'year']
     .map(
       (k) => `<div class="progress-item" data-progress="${k}">
@@ -174,9 +183,47 @@ function renderDashboard(ctx) {
       ${f.clock ? `<div class="card clock-card reveal"><div class="clock" id="clock">--:--:--</div><div class="date" id="date"></div></div>` : ''}
       ${f.hitokoto ? `<figure class="card quote-card reveal">${icon('quote', 'quote-mark')}<blockquote id="hitokoto">${esc(t('dashboard.loadingQuote'))}</blockquote><figcaption id="hitokoto-from"></figcaption></figure>` : ''}
       ${f.timeProgress ? `<div class="card progress-card reveal">${progress}</div>` : ''}
+      ${renderMusic(ctx)}
     </div>
   </div>
 </section>`;
+}
+
+/**
+ * 渲染音乐播放器卡片，歌曲由前端脚本按配置加载
+ * @param {object} ctx 渲染上下文
+ * @returns {string} HTML，未启用时为空
+ */
+function renderMusic(ctx) {
+  const { t, config } = ctx;
+  if (!config.music?.enable) return '';
+  /** 生成一个带提示的图标按钮 */
+  const btn = (id, name, label, cls = 'icon-btn') =>
+    `<button type="button" class="${cls}" id="${id}" title="${esc(label)}" aria-label="${esc(label)}">${icon(name)}</button>`;
+  return `<div class="card music-card reveal" id="music" data-state="loading">
+    <div class="music-main">
+      <div class="music-cover">${icon('music')}<img id="music-cover" alt="" hidden></div>
+      <div class="music-info">
+        <b id="music-title">${esc(t('music.loading'))}</b>
+        <span id="music-artist"></span>
+        <span class="music-lrc" id="music-lrc"></span>
+      </div>
+    </div>
+    <div class="music-progress">
+      <span id="music-cur">0:00</span>
+      <input type="range" id="music-seek" min="0" max="1000" value="0" aria-label="${esc(t('music.seek'))}">
+      <span id="music-dur">0:00</span>
+    </div>
+    <div class="music-controls">
+      ${btn('music-mode', 'repeat', t('music.mode.list'))}
+      ${btn('music-prev', 'skip-back', t('music.prev'))}
+      <button type="button" class="fab-mini" id="music-play" title="${esc(t('music.play'))}" aria-label="${esc(t('music.play'))}">${icon('play', 'i-play')}${icon('pause', 'i-pause')}</button>
+      ${btn('music-next', 'skip-forward', t('music.next'))}
+      ${btn('music-list-btn', 'list-music', t('music.list'))}
+    </div>
+    <ol class="music-list" id="music-list" hidden></ol>
+    ${['repeat', 'repeat-1', 'shuffle'].map((n) => `<template id="music-icon-${n}">${icon(n)}</template>`).join('')}
+  </div>`;
 }
 
 /**
@@ -643,7 +690,18 @@ function clientData(ctx) {
       theme: dict.theme,
       eggConsole: t('egg.console', { repo: `https://github.com/${config.profile.github}/homepager` }),
       eggRainbow: t('egg.rainbow'),
+      music: dict.music,
     },
+    music: config.music?.enable
+      ? {
+          api: config.music.api,
+          server: config.music.server,
+          type: config.music.type,
+          id: config.music.id,
+          songs: config.music.songs || [],
+          volume: config.music.volume ?? 0.7,
+        }
+      : null,
     commands,
   };
 }
@@ -672,7 +730,7 @@ ${renderFooter(ctx, buildTime)}
 ${renderPalette(ctx)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <button class="back-top" id="back-top" type="button" aria-label="${esc(ctx.t('backTop'))}">${icon('arrow-up')}</button>
-${ctx.config.features.cursorGlow ? '<div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div>' : ''}
+${ctx.config.music?.enable ? `<button class="music-fab" id="music-fab" type="button" aria-label="${esc(ctx.t('music.title'))}" hidden>${icon('play', 'i-play')}${icon('pause', 'i-pause')}</button>` : ''}
 <script>window.__SITE__=${JSON.stringify(clientData(ctx)).replace(/</g, '\\u003c')}</script>`;
   return layout(ctx, { body, path: ctx.lang === ctx.config.site.defaultLang ? '' : `${ctx.lang}/` });
 }
@@ -685,7 +743,6 @@ ${ctx.config.features.cursorGlow ? '<div class="cursor-glow" id="cursor-glow" ar
 export function renderNotFound(ctx) {
   const { t } = ctx;
   const body = `<main class="notfound">
-  <div class="hero-bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span></div>
   <h1>404</h1>
   <p class="nf-title">${esc(t('notFound.title'))}</p>
   <p class="muted">${esc(t('notFound.desc'))}</p>
@@ -714,6 +771,9 @@ function layout(ctx, { body, path, noindex = false, title }) {
   const alt = ['zh', 'en']
     .map((l) => `<link rel="alternate" hreflang="${l === 'zh' ? 'zh-CN' : 'en'}" href="${site.url}${ctx.langHref(l).slice(base.length - 1)}">`)
     .join('');
+  const bodyClass = [config.features.loader && !noindex ? 'is-loading' : '', ctx.bing && !noindex ? 'has-hero-image' : '']
+    .filter(Boolean)
+    .join(' ');
   // 主题预加载：在 CSS 生效前设置 data-theme，避免深色模式闪白
   const themeBoot = `(function(){try{var m=localStorage.getItem('theme')||'auto';var d=m==='dark'||(m==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.dataset.themeMode=m}catch(e){document.documentElement.dataset.theme='light'}})()`;
   return `<!doctype html>
@@ -742,8 +802,8 @@ ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" hr
 <script src="${base}${assets.js}" defer></script>
 ${config.features.busuanzi && !noindex ? '<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>' : ''}
 </head>
-<body${config.features.loader && !noindex ? ' class="is-loading"' : ''}>
-${config.features.loader && !noindex ? '<div class="loader" id="loader" aria-hidden="true"><span></span><span></span><span></span></div>' : ''}
+<body${bodyClass ? ` class="${bodyClass}"` : ''}>
+${config.features.loader && !noindex ? '<div class="loader" id="loader" aria-hidden="true"><svg class="spinner" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle></svg></div>' : ''}
 <noscript><style>.reveal{opacity:1!important;transform:none!important}.loader{display:none!important}</style><p class="noscript">${esc(t('noscript'))}</p></noscript>
 ${body}
 </body>
