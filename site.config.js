@@ -198,7 +198,6 @@ export default {
     { name: 'AriasakaのBlog', url: 'https://blog.yaria.top/', avatar: 'https://img.0v0.my/2024/12/05/67517ba094506.png', desc: '' },
     { name: '墨七', url: 'https://mo7.cc/', avatar: 'https://file.mo7.cc/static/lxh_gif/lxh_71.gif', desc: '墨染七弦月，笔耕半亩田' },
     { name: '沐雨酆臻', url: 'https://blg.myfz.fun', avatar: 'https://myfz.fun/blg/logo/logo.png', desc: '沐雨酆臻个人博客' },
-    { name: '一剪沐橙の小窝', url: 'https://mucute-qwq.github.io/', avatar: 'https://mucute-qwq.github.io/images/avatar.jpg', desc: '一剪沐橙の小窝' },
   ],
 
   /**
