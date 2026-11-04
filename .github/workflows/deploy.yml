@@ -1,0 +1,70 @@
+# 构建并部署到 GitHub Pages
+# - 推送到 dev / main / master 分支时自动部署
+# - 每天定时重新构建一次，刷新 GitHub 星标、仓库和贡献日历
+# - Pull Request 只做检查，不部署
+name: Deploy Homepage
+
+on:
+  push:
+    branches: [dev, main, master]
+  pull_request:
+  schedule:
+    - cron: '0 18 * * *' # 每天北京时间 02:00
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check config, i18n and links
+        run: npm run check
+
+  build:
+    name: Build
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Build site
+        run: npm run build
+        env:
+          # 用于读取 GitHub 数据，提高接口速率限制并获取贡献日历
+          GITHUB_TOKEN: ${{ secrets.GH_PROFILE_TOKEN || secrets.GITHUB_TOKEN }}
+          # 自定义域名时为空字符串，项目页时为 /仓库名
+          SITE_BASE: ${{ steps.pages.outputs.base_path }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

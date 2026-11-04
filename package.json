@@ -1,45 +1,19 @@
 {
-  "name": "home",
-  "author": "imsyy",
-  "github": "https://github.com/imsyy/home",
-  "home": "https://imsyy.top",
+  "name": "homepager",
+  "version": "1.0.0",
+  "description": "铭记（Greglee）的个人主页，零依赖 Node.js 静态生成",
+  "author": "Greglee <3115093767@qq.com>",
+  "license": "MIT",
   "private": true,
-  "version": "4.1.4",
   "type": "module",
+  "engines": {
+    "node": ">=18.17"
+  },
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "preview": "vite preview",
-    "format": "prettier --write src/",
-    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts,.vue --fix"
-  },
-  "dependencies": {
-    "@worstone/vue-aplayer": "^1.0.6",
-    "aplayer": "^1.10.1",
-    "axios": "^1.6.8",
-    "dayjs": "^1.11.10",
-    "element-plus": "^2.7.1",
-    "fetch-jsonp": "^1.3.0",
-    "lodash-es": "^4.17.21",
-    "pinia": "^2.1.7",
-    "pinia-plugin-persistedstate": "^3.2.1",
-    "swiper": "^11.1.1",
-    "vue": "^3.4.24"
-  },
-  "devDependencies": {
-    "@icon-park/vue-next": "^1.4.2",
-    "@vicons/fa": "^0.12.0",
-    "@vicons/utils": "^0.1.4",
-    "@vitejs/plugin-vue": "^4.6.2",
-    "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.25.0",
-    "prettier": "^3.2.5",
-    "sass": "^1.75.0",
-    "terser": "^5.30.4",
-    "unplugin-auto-import": "^0.11.5",
-    "unplugin-vue-components": "^0.22.12",
-    "vite": "^4.5.3",
-    "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-pwa": "^0.14.7"
+    "build": "node scripts/build.js",
+    "build:offline": "node scripts/build.js --offline",
+    "dev": "node scripts/dev.js",
+    "dev:offline": "node scripts/dev.js --offline",
+    "check": "node scripts/check.js"
   }
 }

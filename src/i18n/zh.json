@@ -1,0 +1,31 @@
+{
+  "htmlLang": "zh-CN",
+  "langName": "中文",
+  "switchLang": "English",
+  "nav": { "home": "首页", "about": "关于", "projects": "项目", "skills": "技能", "timeline": "经历", "contact": "联系" },
+  "hero": { "hello": "你好，我是", "scroll": "向下滚动", "viewProjects": "看看我的项目", "contactMe": "联系我" },
+  "sections": {
+    "about": "关于我",
+    "sites": "常用站点",
+    "projects": "精选项目",
+    "recent": "最近活跃",
+    "skills": "技能栈",
+    "contributions": "GitHub 贡献",
+    "timeline": "时间线",
+    "contact": "保持联系",
+    "dashboard": "此时此刻"
+  },
+  "stats": { "repos": "公开仓库", "followers": "关注者", "stars": "获得星标", "following": "正在关注" },
+  "dashboard": { "today": "今日", "week": "本周", "month": "本月", "year": "本年", "passed": "已过去", "loadingQuote": "正在获取一言…" },
+  "week": ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"],
+  "greet": { "night": "夜深了，注意休息", "morning": "早上好", "noon": "中午好", "afternoon": "下午好", "evening": "晚上好" },
+  "contact": { "desc": "有问题、想合作或者只是想打个招呼，都欢迎找我。", "copied": "已复制到剪贴板", "copyFailed": "复制失败，请手动复制" },
+  "project": { "viewRepo": "查看仓库", "visit": "访问", "updated": "更新于" },
+  "footer": { "running": "本站已运行 {days} 天", "builtWith": "使用 Node.js 静态生成，部署于 GitHub Pages", "lastBuild": "最后构建" },
+  "theme": { "toggle": "切换主题", "light": "浅色", "dark": "深色", "auto": "跟随系统" },
+  "palette": { "placeholder": "输入命令或搜索…", "hint": "按 / 打开命令面板", "empty": "没有匹配的结果", "goTo": "跳转到", "open": "打开", "action": "操作" },
+  "backTop": "回到顶部",
+  "menu": "菜单",
+  "notFound": { "title": "页面走丢了", "desc": "你要找的页面不存在，可能已经被移动或删除。", "back": "返回首页" },
+  "noscript": "开启 JavaScript 可以体验更多小功能哦。"
+}

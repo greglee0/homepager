@@ -1,0 +1,31 @@
+{
+  "htmlLang": "en",
+  "langName": "English",
+  "switchLang": "中文",
+  "nav": { "home": "Home", "about": "About", "projects": "Projects", "skills": "Skills", "timeline": "Timeline", "contact": "Contact" },
+  "hero": { "hello": "Hi, I'm", "scroll": "Scroll down", "viewProjects": "See my projects", "contactMe": "Get in touch" },
+  "sections": {
+    "about": "About me",
+    "sites": "Quick links",
+    "projects": "Featured projects",
+    "recent": "Recently active",
+    "skills": "Skills",
+    "contributions": "GitHub contributions",
+    "timeline": "Timeline",
+    "contact": "Stay in touch",
+    "dashboard": "Right now"
+  },
+  "stats": { "repos": "Public repos", "followers": "Followers", "stars": "Stars earned", "following": "Following" },
+  "dashboard": { "today": "Today", "week": "This week", "month": "This month", "year": "This year", "passed": "passed", "loadingQuote": "Fetching a quote…" },
+  "week": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+  "greet": { "night": "It's late, get some rest", "morning": "Good morning", "noon": "Good noon", "afternoon": "Good afternoon", "evening": "Good evening" },
+  "contact": { "desc": "Questions, collaboration, or just saying hi — my inbox is open.", "copied": "Copied to clipboard", "copyFailed": "Copy failed, please copy manually" },
+  "project": { "viewRepo": "Repository", "visit": "Visit", "updated": "Updated" },
+  "footer": { "running": "Online for {days} days", "builtWith": "Statically generated with Node.js, hosted on GitHub Pages", "lastBuild": "Last build" },
+  "theme": { "toggle": "Toggle theme", "light": "Light", "dark": "Dark", "auto": "System" },
+  "palette": { "placeholder": "Type a command or search…", "hint": "Press / for the command palette", "empty": "No results", "goTo": "Go to", "open": "Open", "action": "Action" },
+  "backTop": "Back to top",
+  "menu": "Menu",
+  "notFound": { "title": "Page not found", "desc": "The page you're looking for doesn't exist or has moved.", "back": "Back home" },
+  "noscript": "Enable JavaScript for a few extra goodies."
+}
