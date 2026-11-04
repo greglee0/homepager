@@ -202,11 +202,16 @@ export default {
     { name: '一剪沐橙の小窝', url: 'https://mucute-qwq.github.io/', avatar: 'https://mucute-qwq.github.io/images/avatar.jpg', desc: '一剪沐橙の小窝' },
   ],
 
-  /** 首屏壁纸：bing 为 true 时使用 Bing 每日壁纸（每天定时构建自动更换） */
+  /**
+   * 首屏壁纸：bing 为 true 时使用 Bing 每日壁纸（每天定时构建自动更新）
+   * 会抓取多个地区最近约 15 天的壁纸，去重后可以在首屏左右切换
+   */
   wallpaper: {
     bing: true,
-    /** Bing 地区，zh-CN 为中国版壁纸 */
-    mkt: 'zh-CN',
+    /** 抓取的地区，靠前的优先（同一张图优先用它的标题）；留空使用默认的 12 个地区 */
+    markets: ['zh-CN', 'en-US', 'ja-JP', 'en-GB', 'de-DE', 'fr-FR', 'en-IN', 'en-CA', 'en-AU', 'it-IT', 'es-ES', 'pt-BR'],
+    /** 最多保留多少张 */
+    max: 40,
   },
 
   /**

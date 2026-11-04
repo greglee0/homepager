@@ -16,8 +16,7 @@
     "hello": "Hi, I'm",
     "scroll": "Scroll down",
     "viewProjects": "See my projects",
-    "contactMe": "Get in touch",
-    "wallpaper": "Today's Bing wallpaper"
+    "contactMe": "Get in touch"
   },
   "sections": {
     "about": "About me",
@@ -141,5 +140,10 @@
       "one": "Repeat one",
       "random": "Shuffle"
     }
+  },
+  "wallpaper": {
+    "prev": "Previous wallpaper",
+    "next": "Next wallpaper",
+    "random": "Random wallpaper"
   }
 }

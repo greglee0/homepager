@@ -110,17 +110,26 @@ function renderHero(ctx) {
   const { t, p, config, github, bing } = ctx;
   const avatar = config.profile.avatar || github.user?.avatar_url || `https://github.com/${config.profile.github}.png`;
   const roles = p(config.profile.roles) || [];
-  // 手机竖屏使用竖版壁纸，节省流量也更清晰
-  const wallpaper = bing
+  // 手机竖屏使用竖版壁纸；默认显示列表第一张（今天的壁纸），前端脚本负责切换
+  const first = bing?.images?.[0];
+  const wallpaper = first
     ? `<picture class="hero-wallpaper" aria-hidden="true">
-      <source media="(max-width: 720px) and (orientation: portrait)" srcset="${esc(bing.mobile)}">
-      <img src="${esc(bing.desktop)}" alt="" fetchpriority="high" decoding="async">
+      <source id="wp-source" media="(max-width: 720px) and (orientation: portrait)" srcset="${esc(first.mobile)}">
+      <img id="wp-img" src="${esc(first.desktop)}" alt="" fetchpriority="high" decoding="async">
     </picture><div class="hero-scrim" aria-hidden="true"></div>`
     : '';
-  const credit = bing
-    ? `<a class="wallpaper-credit" href="${esc(bing.link)}" target="_blank" rel="noopener" title="${esc(bing.copyright)}">${icon('image')}<span>${esc(t('hero.wallpaper'))} · ${esc(bing.title || bing.copyright)}</span></a>`
+  const many = (bing?.images?.length || 0) > 1;
+  /** 生成壁纸切换按钮 */
+  const wpBtn = (id, name, label) =>
+    `<button type="button" class="icon-btn" id="${id}" title="${esc(label)}" aria-label="${esc(label)}">${icon(name)}</button>`;
+  const credit = first
+    ? `<div class="wallpaper-bar">
+      ${many ? wpBtn('wp-prev', 'chevron-left', t('wallpaper.prev')) : ''}
+      <a class="wallpaper-credit" id="wp-credit" href="${esc(first.link)}" target="_blank" rel="noopener" title="${esc(first.copyright)}">${icon('image')}<span id="wp-title">${esc(first.title || first.copyright)}</span>${many ? `<small id="wp-count">1/${bing.images.length}</small>` : ''}</a>
+      ${many ? wpBtn('wp-next', 'chevron-right', t('wallpaper.next')) + wpBtn('wp-random', 'shuffle', t('wallpaper.random')) : ''}
+    </div>`
     : '';
-  return `<section class="hero${bing ? ' has-wallpaper' : ''}" id="top">
+  return `<section class="hero${first ? ' has-wallpaper' : ''}" id="top">
   ${wallpaper}
   <div class="container hero-inner">
     <img class="avatar" src="${esc(avatar)}" alt="${esc(p(config.profile.name))}" width="112" height="112">
@@ -134,6 +143,7 @@ function renderHero(ctx) {
     </div>
     <div class="social">${renderSocial(ctx)}</div>
   </div>
+  <a class="scroll-hint icon-btn" href="#dashboard" aria-label="${esc(t('hero.scroll'))}">${icon('chevron-down')}</a>
   ${credit}
 </section>`;
 }
@@ -691,7 +701,17 @@ function clientData(ctx) {
       eggConsole: t('egg.console', { repo: `https://github.com/${config.profile.github}/homepager` }),
       eggRainbow: t('egg.rainbow'),
       music: dict.music,
+      wallpaper: dict.wallpaper,
     },
+    // 壁纸只传前端切换需要的字段
+    wallpapers: (ctx.bing?.images || []).map((w) => ({
+      id: w.id,
+      desktop: w.desktop,
+      mobile: w.mobile,
+      title: w.title || w.copyright,
+      copyright: w.copyright,
+      link: w.link,
+    })),
     music: config.music?.enable
       ? {
           api: config.music.api,
@@ -771,7 +791,7 @@ function layout(ctx, { body, path, noindex = false, title }) {
   const alt = ['zh', 'en']
     .map((l) => `<link rel="alternate" hreflang="${l === 'zh' ? 'zh-CN' : 'en'}" href="${site.url}${ctx.langHref(l).slice(base.length - 1)}">`)
     .join('');
-  const bodyClass = [config.features.loader && !noindex ? 'is-loading' : '', ctx.bing && !noindex ? 'has-hero-image' : '']
+  const bodyClass = [config.features.loader && !noindex ? 'is-loading' : '', ctx.bing?.images?.length && !noindex ? 'has-hero-image' : '']
     .filter(Boolean)
     .join(' ');
   // 主题预加载：在 CSS 生效前设置 data-theme，避免深色模式闪白

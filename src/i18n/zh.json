@@ -16,8 +16,7 @@
     "hello": "你好，我是",
     "scroll": "向下滚动",
     "viewProjects": "看看我的项目",
-    "contactMe": "联系我",
-    "wallpaper": "今日 Bing 壁纸"
+    "contactMe": "联系我"
   },
   "sections": {
     "about": "关于我",
@@ -141,5 +140,10 @@
       "one": "单曲循环",
       "random": "随机播放"
     }
+  },
+  "wallpaper": {
+    "prev": "上一张壁纸",
+    "next": "下一张壁纸",
+    "random": "随机壁纸"
   }
 }

@@ -456,6 +456,100 @@
   if (themeBtn) themeBtn.addEventListener('click', cycleTheme);
 
   /* ---------------------------------------------------------------------
+     壁纸切换：上一张 / 下一张 / 随机，手机上可左右滑动；当天内记住选择
+     --------------------------------------------------------------------- */
+  (function wallpaperSwitcher() {
+    var list = SITE.wallpapers || [];
+    var img = $('#wp-img');
+    var source = $('#wp-source');
+    if (!img || list.length < 2) return;
+    var credit = $('#wp-credit');
+    var titleEl = $('#wp-title');
+    var countEl = $('#wp-count');
+    var today = new Date().toDateString();
+    var index = 0;
+    var busy = false;
+
+    /**
+     * 显示第 i 张壁纸：先预加载，加载完成后淡入，避免出现空白
+     * @param {number} i 下标
+     * @param {boolean} [remember] 是否记住这次选择
+     */
+    function show(i, remember) {
+      if (busy) return;
+      index = (i + list.length) % list.length;
+      var w = list[index];
+      var portrait = window.matchMedia('(max-width: 720px) and (orientation: portrait)').matches;
+      var pre = new Image();
+      busy = true;
+      img.classList.add('switching');
+      pre.onload = pre.onerror = function () {
+        if (source) source.srcset = w.mobile;
+        img.src = w.desktop;
+        img.classList.remove('switching');
+        busy = false;
+      };
+      pre.src = portrait ? w.mobile : w.desktop;
+      titleEl.textContent = w.title;
+      credit.href = w.link;
+      credit.title = w.copyright;
+      if (countEl) countEl.textContent = index + 1 + '/' + list.length;
+      if (remember) save('wallpaper', JSON.stringify({ id: w.id, day: today }));
+    }
+
+    $('#wp-prev').addEventListener('click', function () {
+      show(index - 1, true);
+    });
+    $('#wp-next').addEventListener('click', function () {
+      show(index + 1, true);
+    });
+    $('#wp-random').addEventListener('click', function () {
+      var r = index;
+      while (r === index) r = Math.floor(Math.random() * list.length);
+      show(r, true);
+    });
+
+    // 首屏左右滑动切换
+    var hero = $('.hero');
+    var startX = null;
+    var startY = 0;
+    hero.addEventListener(
+      'touchstart',
+      function (e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      },
+      { passive: true },
+    );
+    hero.addEventListener(
+      'touchend',
+      function (e) {
+        if (startX === null) return;
+        var dx = e.changedTouches[0].clientX - startX;
+        var dy = e.changedTouches[0].clientY - startY;
+        startX = null;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) show(index + (dx < 0 ? 1 : -1), true);
+      },
+      { passive: true },
+    );
+
+    // 恢复当天选过的壁纸（第二天自动回到当天最新的）
+    try {
+      var saved = JSON.parse(load('wallpaper') || 'null');
+      if (saved && saved.day === today) {
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].id === saved.id && i !== 0) {
+            show(i, false);
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      /* 忽略损坏的存储 */
+    }
+  })();
+
+  /* ---------------------------------------------------------------------
      MD 水波纹：点击按钮、卡片时从点击位置扩散
      --------------------------------------------------------------------- */
   var RIPPLE_SEL = '.btn, .icon-btn, .social-btn, .chip, .fab-mini, .music-fab, .back-top, a.card, .more, .repo-visit, .nav a';
